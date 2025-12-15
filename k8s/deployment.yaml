@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-app-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: python-app
+  template:
+    metadata:
+      labels:
+        app: python-app
+    spec:
+      # Utilisation du KSA pour Workload Identity
+      serviceAccountName: app-ksa 
+      containers:
+      - name: python-app-container
+        # Utilisation du chemin exact de votre image
+        image: europe-west1-docker.pkg.dev/tp-kubernetes-gke-479308/mon-depot-docker/mon-app-python:v1.0.0 
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-app-service
+spec:
+  selector:
+    app: python-app
+  type: LoadBalancer # Expose l'application publiquement
+  ports:
+  - port: 80
+    targetPort: 8080

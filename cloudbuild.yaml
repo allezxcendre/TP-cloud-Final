@@ -1,0 +1,36 @@
+steps:
+# 1. Construire l'image Docker avec un tag basé sur le hash du commit
+- name: 'gcr.io/cloud-builders/docker'
+  args: 
+  - 'build'
+  - '-t'
+  - 'europe-west1-docker.pkg.dev/$PROJECT_ID/mon-depot-docker/mon-app-python:$COMMIT_SHA'
+  - '.'
+
+# 2. Pousser l'image vers Artifact Registry
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - 'push'
+  - 'europe-west1-docker.pkg.dev/$PROJECT_ID/mon-depot-docker/mon-app-python:$COMMIT_SHA'
+
+# 3. Mettre à jour le Déploiement GKE (Authentification)
+# Nous devons récupérer les identifiants du cluster GKE
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args:
+  - 'container'
+  - 'clusters'
+  - 'get-credentials'
+  - 'mon-cluster-tf'
+  - '--region=europe-west1'
+
+# 4. Mettre à jour le Déploiement GKE (Rollout)
+- name: 'gcr.io/cloud-builders/kubectl'
+  args:
+    - 'set'
+    - 'image'
+    - 'deployment/python-app-deployment'
+    - 'python-app-container=europe-west1-docker.pkg.dev/$PROJECT_ID/mon-depot-docker/mon-app-python:$COMMIT_SHA'
+  env:
+    - 'CLOUDSDK_COMPUTE_REGION=europe-west1'
+    - 'CLOUDSDK_CONTAINER_CLUSTER=mon-cluster-tf'
