@@ -1,0 +1,20 @@
+# Fichiers et dossiers généraux de l'OS
+.DS_Store
+*.swp
+
+# Ignorer le cache Python
+__pycache__/
+*.pyc
+
+# ----------------------------------------------------
+# Fichiers Git et Terraform à ignorer
+# ----------------------------------------------------
+
+# Dossier du cache Terraform (FOURNISSEURS)
+.terraform/
+
+# Fichiers binaires et de configuration locale
+*.tfplan
+*.tfstate
+*.tfstate.*
+crash.log
